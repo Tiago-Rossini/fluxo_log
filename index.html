@@ -95,22 +95,11 @@
             border-radius: 0.5rem;
             position: relative;
             overflow: hidden;
-            cursor: pointer;
         }
         .panel-image-container img, .panel-image-container svg {
             height: 100%;
             width: 100%;
             object-fit: cover;
-        }
-        .panel-image-container::after {
-            content: 'Clique para adicionar uma imagem';
-            position: absolute;
-            color: #ccc;
-            font-style: italic;
-            opacity: 0.5;
-        }
-        .panel-image-container img + ::after, .panel-image-container svg + ::after {
-            content: '';
         }
         .panel-title { font-size: 2rem; font-weight: 900; color: var(--petro-yellow); margin-bottom: 1rem; }
         .panel-details h3 { font-size: 1.2rem; font-weight: 700; color: var(--petro-green); margin-top: 1.5rem; margin-bottom: 0.5rem; }
@@ -120,12 +109,9 @@
             margin-top: 0.5rem;
             background: rgba(0,0,0,0.2);
             border-radius: 0.5rem;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ccc;
-            font-style: italic;
             overflow: hidden;
         }
          .sub-image-container img {
@@ -194,101 +180,139 @@
     <div id="info-panel">
         <button id="close-panel" onclick="closeInfo()">&times;</button>
         <div class="panel-content">
-            <div class="panel-image-container" id="panel-image-container" onclick="triggerImageUpload('main')"></div>
+            <div class="panel-image-container" id="panel-image-container"></div>
             <h2 class="panel-title" id="panel-title"></h2>
             <div class="panel-details" id="panel-details"></div>
         </div>
     </div>
-    
-    <!-- Hidden file input -->
-    <input type="file" id="image-upload" class="hidden" accept="image/*">
 
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script>
         const infoPanel = document.getElementById('info-panel');
         const panelTitle = document.getElementById('panel-title');
         const panelDetails = document.getElementById('panel-details');
-        const imageUploadInput = document.getElementById('image-upload');
 
         const data = {
             'extracao': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M12 60h40v2H12z" fill="#003A64"/><path d="M22 60l10-44 10 44z" fill="#00843D"/><path d="M27 44h10" stroke="#FFF" stroke-width="2"/><rect fill="#FFC72C" x="28" y="34" width="8" height="8" rx="1"/><path d="M16 38c6-6 16-6 22 0 6 6 16 6 22 0" stroke="#FFF" stroke-width="2" opacity=".5"/></g></svg>`,
+                image: 'plataforma.webp',
                 title: 'Matéria-Prima – Extração',
                 details: [
-                    { title: 'Origem', content: 'Plataformas offshore (ex.: Bacia de Campos) e campos terrestres (ex.: Rio Grande do Norte).' },
-                    { title: 'Modal Marítimo – Navio Aliviador', content: '<strong>Tipo:</strong> Navio petroleiro Shuttle Tanker.<br><strong>Motivo:</strong> Essencial para escoar grandes volumes (500 mil a 2 milhões de barris) de plataformas sem oleodutos diretos.' },
-                    { title: 'Modal Dutoviário – Oleoduto de coleta', content: '<strong>Tipo:</strong> Aço carbono, enterrado, diâmetro 12"-36".<br><strong>Motivo:</strong> Garante fluxo contínuo e seguro de poços em terra até os terminais.' }
+                    { 
+                        title: 'Origem', 
+                        content: 'Plataformas offshore (ex.: Bacia de Campos) e campos terrestres (ex.: Rio Grande do Norte).',
+                        image: 'pof.png' 
+                    },
+                    { 
+                        title: 'Modal Marítimo – Navio Aliviador', 
+                        content: '<strong>Tipo:</strong> Navio petroleiro Shuttle Tanker.<br><strong>Motivo:</strong> Essencial para escoar grandes volumes (500 mil a 2 milhões de barris) de plataformas sem oleodutos diretos.',
+                        image: 'nav.jpg' 
+                    },
+                    { 
+                        title: 'Modal Dutoviário – Oleoduto de coleta', 
+                        content: '<strong>Tipo:</strong> Aço carbono, enterrado, diâmetro 12"-36".<br><strong>Motivo:</strong> Garante fluxo contínuo e seguro de poços em terra até os terminais.',
+                        image: 'oleo.jpg' 
+                    }
                 ]
             },
             'transporte': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M4 47h56v-8H4z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M14 39h36v-8H14z" fill="#FFF"/><path d="M17 31h30v-6H17z" fill="#00843D"/><path d="M12 25h40M12 47c-4 0-8-4-8-8s4-8 8-8M52 47c4 0 8-4 8-8s-4-8-8-8" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`,
+                image: 'reff.png',
                 title: 'Transporte até a Refinaria',
                 details: [
-                    { title: 'Principal Modal: Dutoviário', content: '<strong>Tipo:</strong> Oleoduto multi-produto (poliduto) com sistema de “bateladas”. Ex: Oleoduto OSBRA.<br><strong>Motivo:</strong> Baixo custo por litro, alta segurança e operação ininterrupta 24h/dia.' },
-                    { title: 'Modal Alternativo: Ferroviário', content: 'Usado em rotas específicas onde há malha ferroviária disponível e não há dutos.' }
+                    { 
+                        title: 'Principal Modal: Dutoviário', 
+                        content: '<strong>Tipo:</strong> Oleoduto multi-produto (poliduto) com sistema de “bateladas”. Ex: Oleoduto OSBRA.<br><strong>Motivo:</strong> Baixo custo por litro, alta segurança e operação ininterrupta 24h/dia.',
+                        image: 'oleo.jpg' 
+                    },
+                    { 
+                        title: 'Modal Alternativo: Ferroviário', 
+                        content: 'Usado em rotas específicas onde há malha ferroviária disponível e não há dutos.',
+                        image: 'vag.jpg' 
+                    }
                 ]
             },
             'refino': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M23 20h-8v38h8zM49 6h-8v52h8z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M32 45a7 7 0 100-14 7 7 0 000 14z" fill="#FFC72C"/><path d="M32 38v-4M32 52v-4M39 45h-4M25 45h-4" stroke="#FFF" stroke-width="2" stroke-linecap="round"/><path d="M41 38h-2v14h2z" fill="#00843D"/></g></svg>`,
+                image: 'refino.webp',
                 title: 'Fabricação – Processo de Refino',
                 details: [
-                    { title: 'Local', content: 'Refinarias da Petrobras (REPLAN, REDUC, etc.).' },
-                    { title: 'Etapas de Produção', content: '<strong>1. Destilação fracionada</strong><br><strong>2. Craqueamento catalítico</strong><br><strong>3. Tratamento químico</strong><br><strong>4. Mistura e aditivação</strong>' },
-                    { title: 'Armazenamento', content: 'Tanques de aço com teto flutuante para reduzir evaporação.' }
+                    { 
+                        title: 'Local', 
+                        content: 'Refinarias da Petrobras (REPLAN, REDUC, etc.).',
+                        image: 'ref.png' 
+                    },
+                    { 
+                        title: 'Etapas de Produção', 
+                        content: '<strong>1. Destilação fracionada</strong><br><strong>2. Craqueamento catalítico</strong><br><strong>3. Tratamento químico</strong><br><strong>4. Mistura e aditivação</strong>',
+                        image: 'prod.png' 
+                    },
+                    { 
+                        title: 'Armazenamento', 
+                        content: 'Tanques de aço com teto flutuante para reduzir evaporação.',
+                        image: 'arma.jpg' 
+                    }
                 ]
             },
             'distribuicao': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><path stroke="#FFF" stroke-width="2" d="M6 32h52"/><path stroke="#FFC72C" stroke-width="4" d="M6 32h52" stroke-dasharray="8, 16"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="1s" repeatCount="indefinite"/></path></g></svg>`,
+                image: 'rota.jpeg',
                 title: 'Rotas Logísticas',
                 details: [
-                    { title: 'Refinaria → Terminais', content: '<strong>Modal Principal (Dutoviário):</strong> Polidutos transportam simultaneamente gasolina, diesel e querosene por longas distâncias com baixo custo.<br><strong>Modal Alternativo (Marítimo):</strong> Viável para grandes volumes entre refinarias e terminais costeiros.' },
-                    { title: 'Terminais → Bases Regionais', content: '<strong>Modal Principal (Rodoviário):</strong> Caminhões-tanque (30-45 mil litros) oferecem flexibilidade.<br><strong>Modal Alternativo (Ferroviário):</strong> Mais econômico para longas distâncias quando há infraestrutura.' }
+                    { 
+                        title: 'Refinaria → Terminais', 
+                        content: '<strong>Modal Principal (Dutoviário):</strong> Polidutos transportam simultaneamente gasolina, diesel e querosene por longas distâncias com baixo custo.<br><strong>Modal Alternativo (Marítimo):</strong> Viável para grandes volumes entre refinarias e terminais costeiros.',
+                        image: 'terminais.jpg' 
+                    },
+                    { 
+                        title: 'Terminais → Bases Regionais', 
+                        content: '<strong>Modal Principal (Rodoviário):</strong> Caminhões-tanque (30-45 mil litros) oferecem flexibilidade.<br><strong>Modal Alternativo (Ferroviário):</strong> Mais econômico para longas distâncias quando há infraestrutura.',
+                        image: 'bases.jpg' 
+                    }
                 ]
             },
             'ultima-milha': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M6 48h10l4-8h22v8h12l4 4H6z" fill="#FFF"/><path d="M20 40h26v-4H20z" fill="#003A64"/><circle fill="#FFF" cx="24" cy="48" r="5"/><circle fill="#FFF" cx="48" cy="48" r="5"/><path d="M12 40V28h10z" fill="#00843D"/></g></svg>`,
+                image: 'postos.jpg',
                 title: 'Distribuição Final (Última Milha)',
                 details: [
-                    { title: 'Bases Regionais → Postos', content: '<strong>Modal:</strong> Exclusivamente rodoviário, usando caminhões-tanque de porte médio.<br><strong>Tipo:</strong> Tanque compartimentado (5 a 8 mil litros por compartimento) para levar diferentes tipos de combustível na mesma viagem e facilitar o acesso em áreas urbanas.' }
+                    { 
+                        title: 'Bases Regionais → Postos', 
+                        content: '<strong>Modal:</strong> Exclusivamente rodoviário, usando caminhões-tanque de porte médio.<br><strong>Tipo:</strong> Tanque compartimentado (5 a 8 mil litros por compartimento) para levar diferentes tipos de combustível na mesma viagem e facilitar o acesso em áreas urbanas.',
+                        image: 'transporte.webp' 
+                    }
                 ]
             },
             'final': {
-                animation: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M22 14h20v36H22z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M42 32h12v20h-4" stroke="#FFF" stroke-width="2"/><circle fill="#FFC72C" cx="32" cy="54" r="2"><animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/></circle></g></svg>`,
+                image: 'postope.webp',
                 title: 'Cliente Final',
                 details: [
-                    { title: 'Destino', content: 'Postos Petrobras e demais redes de combustíveis em todo o país.' },
-                    { title: 'Uso', content: 'Abastecimento de veículos leves, motocicletas, embarcações e equipamentos, concluindo a jornada da energia que move o Brasil.' }
+                    { 
+                        title: 'Destino', 
+                        content: 'Postos Petrobras e demais redes de combustíveis em todo o país.',
+                        image: 'carro.jpg' 
+                    },
+                    { 
+                        title: 'Uso', 
+                        content: 'Abastecimento de veículos leves, motocicletas, embarcações e equipamentos, concluindo a jornada da energia que move o Brasil.',
+                        image: 'uso.jpg' 
+                    }
                 ]
             }
         };
 
-        let currentOpenNodeId = null;
-        let currentSubImageId = null;
-
         function showInfo(nodeId) {
-            currentOpenNodeId = nodeId;
             const nodeData = data[nodeId];
             if (nodeData) {
-                const panelImageContainer = infoPanel.querySelector('#panel-image-container');
-                const savedImage = localStorage.getItem(`image_${nodeId}_main`);
-                
-                panelImageContainer.innerHTML = savedImage ? `<img src="${savedImage}" alt="${nodeData.title}">` : nodeData.animation;
+                const panelImageContainer = document.getElementById('panel-image-container');
+                panelImageContainer.innerHTML = `<img src="${nodeData.image}" alt="${nodeData.title}">`;
                 
                 panelTitle.textContent = nodeData.title;
                 
                 let detailsHTML = '';
                 nodeData.details.forEach((item, index) => {
-                    const subImageId = `${nodeId}_${index}`;
-                    const savedSubImage = localStorage.getItem(`image_${subImageId}`);
-                    const subImageContainerHTML = savedSubImage 
-                        ? `<div class="sub-image-container" id="sub-image-container-${subImageId}" onclick="triggerImageUpload('${subImageId}')"><img src="${savedSubImage}"></div>`
-                        : `<div class="sub-image-container" id="sub-image-container-${subImageId}" onclick="triggerImageUpload('${subImageId}')">Clique para adicionar uma imagem</div>`;
-
                     detailsHTML += `
                         <div>
                             <h3>${item.title}</h3>
                             <p>${item.content}</p>
-                            ${subImageContainerHTML}
+                            <div class="sub-image-container">
+                                <img src="${item.image}" alt="${item.title}">
+                            </div>
                         </div>
                     `;
                 });
@@ -299,31 +323,7 @@
 
         function closeInfo() {
             infoPanel.classList.remove('open');
-            currentOpenNodeId = null;
         }
-        
-        window.triggerImageUpload = function(id) {
-            currentSubImageId = id;
-            imageUploadInput.click();
-        }
-
-        imageUploadInput.onchange = function(event) {
-            const key = currentSubImageId.includes('_') ? `image_${currentSubImageId}` : `image_${currentOpenNodeId}_main`;
-            const containerId = currentSubImageId.includes('_') ? `sub-image-container-${currentSubImageId}` : 'panel-image-container';
-
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    localStorage.setItem(key, imageUrl);
-                    
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = `<img src="${imageUrl}">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        };
 
         function drawConnectors() {
             const svg = document.getElementById('svg-connectors');

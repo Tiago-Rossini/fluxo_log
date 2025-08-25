@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxo Interativo da Jornada da Gasolina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --petro-green: #00843D;
+            --petro-yellow: #FFC72C;
+            --petro-dark-blue: #003A64;
+            --petro-bg: #001e36;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--petro-bg);
+            color: #fff;
+            overflow: hidden;
+        }
+        #particles-js {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+        }
+        .flow-node {
+            background: rgba(0, 58, 100, 0.7);
+            border: 2px solid var(--petro-green);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            z-index: 10;
+            width: 200px;
+            backdrop-filter: blur(5px);
+            animation: pulse-glow 4s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 5px rgba(0, 132, 61, 0.5); }
+            to { box-shadow: 0 0 15px rgba(0, 132, 61, 0.8); }
+        }
+        .flow-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 199, 44, 0.7);
+            border-color: var(--petro-yellow);
+            animation-play-state: paused;
+        }
+        .flow-node svg {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 0.5rem;
+        }
+        .connector-line {
+            stroke: var(--petro-green);
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 10 5;
+            animation: dash 1s linear infinite;
+            z-index: 1;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -15; }
+        }
+        #info-panel {
+            position: fixed;
+            top: 0;
+            right: -100%; /* Start off-screen */
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            background: rgba(0, 30, 54, 0.9);
+            backdrop-filter: blur(15px);
+            border-left: 2px solid var(--petro-yellow);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            transition: right 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        #info-panel.open {
+            right: 0;
+        }
+        .panel-content { padding: 2rem; }
+        .panel-image-container {
+            height: 200px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel-image-container img, .panel-image-container svg {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+        }
+        .panel-title { font-size: 2rem; font-weight: 900; color: var(--petro-yellow); margin-bottom: 1rem; }
+        .panel-details h3 { font-size: 1.2rem; font-weight: 700; color: var(--petro-green); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .panel-details p { line-height: 1.7; }
+        .sub-image-container {
+            height: 150px;
+            margin-top: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+         .sub-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #close-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #close-panel:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col items-center justify-center p-4">
+    <div id="particles-js"></div>
+    <h1 class="text-3xl font-bold text-white mb-8">Fluxo da Cadeia Logística da Gasolina</h1>
+    <div id="main-container" class="relative w-full h-full max-w-7xl max-h-[800px] grid grid-cols-3 grid-rows-2 gap-x-8 gap-y-32 items-center justify-items-center">
+        <!-- SVG Connectors will be drawn by JS -->
+        <svg id="svg-connectors" class="absolute top-0 left-0 w-full h-full" style="pointer-events: none;"></svg>
+
+        <!-- Flow Nodes -->
+        <div id="node-extracao" class="flow-node" style="grid-column: 1; grid-row: 1;" onclick="showInfo('extracao')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M12 60h40v2H12z" fill="#003A64"/><path d="M22 60l10-44 10 44z" fill="#00843D"/><path d="M27 44h10" stroke="#FFF" stroke-width="2"/><rect fill="#FFC72C" x="28" y="34" width="8" height="8" rx="1"/><path d="M16 38c6-6 16-6 22 0 6 6 16 6 22 0" stroke="#FFF" stroke-width="2" opacity=".5"/></g></svg>
+            <p>Extração</p>
+        </div>
+
+        <div id="node-transporte" class="flow-node" style="grid-column: 2; grid-row: 1;" onclick="showInfo('transporte')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M4 47h56v-8H4z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M14 39h36v-8H14z" fill="#FFF"/><path d="M17 31h30v-6H17z" fill="#00843D"/><path d="M12 25h40M12 47c-4 0-8-4-8-8s4-8 8-8M52 47c4 0 8-4 8-8s-4-8-8-8" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+            <p>Transporte à Refinaria</p>
+        </div>
+        
+        <div id="node-refino" class="flow-node" style="grid-column: 3; grid-row: 1;" onclick="showInfo('refino')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M23 20h-8v38h8zM49 6h-8v52h8z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M32 45a7 7 0 100-14 7 7 0 000 14z" fill="#FFC72C"/><path d="M32 38v-4M32 52v-4M39 45h-4M25 45h-4" stroke="#FFF" stroke-width="2" stroke-linecap="round"/><path d="M41 38h-2v14h2z" fill="#00843D"/></g></svg>
+            <p>Refino</p>
+        </div>
+
+        <div id="node-distribuicao" class="flow-node" style="grid-column: 1; grid-row: 2;" onclick="showInfo('distribuicao')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><path stroke="#FFF" stroke-width="2" d="M6 32h52"/><path stroke="#FFC72C" stroke-width="4" d="M6 32h52" stroke-dasharray="8, 16"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="1s" repeatCount="indefinite"/></path></g></svg>
+            <p>Rotas Logísticas</p>
+        </div>
+
+        <div id="node-ultima-milha" class="flow-node" style="grid-column: 2; grid-row: 2;" onclick="showInfo('ultima-milha')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M6 48h10l4-8h22v8h12l4 4H6z" fill="#FFF"/><path d="M20 40h26v-4H20z" fill="#003A64"/><circle fill="#FFF" cx="24" cy="48" r="5"/><circle fill="#FFF" cx="48" cy="48" r="5"/><path d="M12 40V28h10z" fill="#00843D"/></g></svg>
+            <p>Distribuição Final</p>
+        </div>
+
+        <div id="node-final" class="flow-node" style="grid-column: 3; grid-row: 2;" onclick="showInfo('final')">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill-rule="nonzero" fill="none"><path d="M22 14h20v36H22z" fill="#003A64" stroke="#FFF" stroke-width="2"/><path d="M42 32h12v20h-4" stroke="#FFF" stroke-width="2"/><circle fill="#FFC72C" cx="32" cy="54" r="2"><animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/></circle></g></svg>
+            <p>Cliente Final</p>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="info-panel">
+        <button id="close-panel" onclick="closeInfo()">&times;</button>
+        <div class="panel-content">
+            <div class="panel-image-container" id="panel-image-container"></div>
+            <h2 class="panel-title" id="panel-title"></h2>
+            <div class="panel-details" id="panel-details"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        const infoPanel = document.getElementById('info-panel');
+        const panelTitle = document.getElementById('panel-title');
+        const panelDetails = document.getElementById('panel-details');
+
+        const data = {
+            'extracao': {
+                image: 'plataforma.webp',
+                title: 'Matéria-Prima – Extração',
+                details: [
+                    { 
+                        title: 'Origem', 
+                        content: 'Plataformas offshore (ex.: Bacia de Campos) e campos terrestres (ex.: Rio Grande do Norte).',
+                        image: 'pof.png' 
+                    },
+                    { 
+                        title: 'Modal Marítimo – Navio Aliviador', 
+                        content: '<strong>Tipo:</strong> Navio petroleiro Shuttle Tanker.<br><strong>Motivo:</strong> Essencial para escoar grandes volumes (500 mil a 2 milhões de barris) de plataformas sem oleodutos diretos.',
+                        image: 'nav.jpg' 
+                    },
+                    { 
+                        title: 'Modal Dutoviário – Oleoduto de coleta', 
+                        content: '<strong>Tipo:</strong> Aço carbono, enterrado, diâmetro 12"-36".<br><strong>Motivo:</strong> Garante fluxo contínuo e seguro de poços em terra até os terminais.',
+                        image: 'oleo.jpg' 
+                    }
+                ]
+            },
+            'transporte': {
+                image: 'reff.png',
+                title: 'Transporte até a Refinaria',
+                details: [
+                    { 
+                        title: 'Principal Modal: Dutoviário', 
+                        content: '<strong>Tipo:</strong> Oleoduto multi-produto (poliduto) com sistema de “bateladas”. Ex: Oleoduto OSBRA.<br><strong>Motivo:</strong> Baixo custo por litro, alta segurança e operação ininterrupta 24h/dia.',
+                        image: 'oleo.jpg' 
+                    },
+                    { 
+                        title: 'Modal Alternativo: Ferroviário', 
+                        content: 'Usado em rotas específicas onde há malha ferroviária disponível e não há dutos.',
+                        image: 'vag.jpg' 
+                    }
+                ]
+            },
+            'refino': {
+                image: 'refino.webp',
+                title: 'Fabricação – Processo de Refino',
+                details: [
+                    { 
+                        title: 'Local', 
+                        content: 'Refinarias da Petrobras (REPLAN, REDUC, etc.).',
+                        image: 'ref.png' 
+                    },
+                    { 
+                        title: 'Etapas de Produção', 
+                        content: '<strong>1. Destilação fracionada</strong><br><strong>2. Craqueamento catalítico</strong><br><strong>3. Tratamento químico</strong><br><strong>4. Mistura e aditivação</strong>',
+                        image: 'prod.png' 
+                    },
+                    { 
+                        title: 'Armazenamento', 
+                        content: 'Tanques de aço com teto flutuante para reduzir evaporação.',
+                        image: 'arma.jpg' 
+                    }
+                ]
+            },
+            'distribuicao': {
+                image: 'rota.jpeg',
+                title: 'Rotas Logísticas',
+                details: [
+                    { 
+                        title: 'Refinaria → Terminais', 
+                        content: '<strong>Modal Principal (Dutoviário):</strong> Polidutos transportam simultaneamente gasolina, diesel e querosene por longas distâncias com baixo custo.<br><strong>Modal Alternativo (Marítimo):</strong> Viável para grandes volumes entre refinarias e terminais costeiros.',
+                        image: 'terminais.jpg' 
+                    },
+                    { 
+                        title: 'Terminais → Bases Regionais', 
+                        content: '<strong>Modal Principal (Rodoviário):</strong> Caminhões-tanque (30-45 mil litros) oferecem flexibilidade.<br><strong>Modal Alternativo (Ferroviário):</strong> Mais econômico para longas distâncias quando há infraestrutura.',
+                        image: 'bases.jpg' 
+                    }
+                ]
+            },
+            'ultima-milha': {
+                image: 'postos.jpg',
+                title: 'Distribuição Final (Última Milha)',
+                details: [
+                    { 
+                        title: 'Bases Regionais → Postos', 
+                        content: '<strong>Modal:</strong> Exclusivamente rodoviário, usando caminhões-tanque de porte médio.<br><strong>Tipo:</strong> Tanque compartimentado (5 a 8 mil litros por compartimento) para levar diferentes tipos de combustível na mesma viagem e facilitar o acesso em áreas urbanas.',
+                        image: 'transporte.webp' 
+                    }
+                ]
+            },
+            'final': {
+                image: 'postope.webp',
+                title: 'Cliente Final',
+                details: [
+                    { 
+                        title: 'Destino', 
+                        content: 'Postos Petrobras e demais redes de combustíveis em todo o país.',
+                        image: 'carro.jpg' 
+                    },
+                    { 
+                        title: 'Uso', 
+                        content: 'Abastecimento de veículos leves, motocicletas, embarcações e equipamentos, concluindo a jornada da energia que move o Brasil.',
+                        image: 'uso.jpg' 
+                    }
+                ]
+            }
+        };
+
+        function showInfo(nodeId) {
+            const nodeData = data[nodeId];
+            if (nodeData) {
+                const panelImageContainer = document.getElementById('panel-image-container');
+                panelImageContainer.innerHTML = `<img src="${nodeData.image}" alt="${nodeData.title}">`;
+                
+                panelTitle.textContent = nodeData.title;
+                
+                let detailsHTML = '';
+                nodeData.details.forEach((item, index) => {
+                    detailsHTML += `
+                        <div>
+                            <h3>${item.title}</h3>
+                            <p>${item.content}</p>
+                            <div class="sub-image-container">
+                                <img src="${item.image}" alt="${item.title}">
+                            </div>
+                        </div>
+                    `;
+                });
+                panelDetails.innerHTML = detailsHTML;
+                infoPanel.classList.add('open');
+            }
+        }
+
+        function closeInfo() {
+            infoPanel.classList.remove('open');
+        }
+
+        function drawConnectors() {
+            const svg = document.getElementById('svg-connectors');
+            svg.innerHTML = '';
+
+            const connections = [
+                ['node-extracao', 'node-transporte'],
+                ['node-transporte', 'node-refino'],
+                ['node-refino', 'node-distribuicao'],
+                ['node-distribuicao', 'node-ultima-milha'],
+                ['node-ultima-milha', 'node-final']
+            ];
+
+            connections.forEach((pair, index) => {
+                const [startId, endId] = pair;
+                const startNode = document.getElementById(startId);
+                const endNode = document.getElementById(endId);
+                const container = document.getElementById('main-container');
+
+                if (!startNode || !endNode) return;
+
+                const startRect = startNode.getBoundingClientRect();
+                const endRect = endNode.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+
+                const startX = startRect.left - containerRect.left + startRect.width / 2;
+                const startY = startRect.top - containerRect.top + startRect.height / 2;
+                const endX = endRect.left - containerRect.left + endRect.width / 2;
+                const endY = endRect.top - containerRect.top + endRect.height / 2;
+                
+                if (index === 2) { // The curved path
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const controlX1 = startX;
+                    const controlY1 = startY + (endY - startY) * 0.5;
+                    const controlX2 = endX;
+                    const controlY2 = startY + (endY - startY) * 0.5;
+                    path.setAttribute('d', `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`);
+                    path.classList.add('connector-line');
+                    svg.appendChild(path);
+                } else { // Straight lines
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', endX);
+                    line.setAttribute('y2', endY);
+                    line.classList.add('connector-line');
+                    svg.appendChild(line);
+                }
+            });
+        }
+
+        window.addEventListener('load', drawConnectors);
+        window.addEventListener('resize', drawConnectors);
+        
+        particlesJS('particles-js', {
+          "particles": { "number": { "value": 30, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#ffffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.2, "random": true }, "size": { "value": 3, "random": true }, "line_linked": { "enable": false }, "move": { "enable": true, "speed": 0.5, "direction": "none", "random": true, "straight": false, "out_mode": "out" } },
+          "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": false }, "onclick": { "enable": false } } }
+        });
+    </script>
+</body>
+</html>
